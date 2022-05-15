@@ -425,6 +425,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 187ddaf5b10943c4086116adc98e5956, type: 2}
   - {fileID: 11400000, guid: fb8aaee9c2f0b344b811657636229de8, type: 2}
   - {fileID: 11400000, guid: 2a3e99b9160517f42a7a829d358c5a02, type: 2}
+  - {fileID: 11400000, guid: b68600d3f3bce884aab0a5da4878e376, type: 2}
   _connectorBlockers:
   - connector: {fileID: 5794692968534909478, guid: c7a44a27b9f972f4eb39f474e392cec3, type: 3}
     localPositionOffset: {x: 0, y: 0, z: 0}
@@ -435,12 +436,12 @@ MonoBehaviour:
   _doorwayHavingDoorChance: 0.5
   _tileLayerName: Tile
   _doorLayerName: Door
-  _useWeightedSelection: 0
+  _useWeightedSelection: 1
   _mainPathTileCount: 20
   _maxNumberOfAttemptsPerTile: 100
   _maxFailureCount: 100
   _mainBranchEndingTileType: 1
-  _branchingChance: 0.5
+  _branchingChance: 1
   _virtualBranchingCap: 20
   _branchesMinTileCount: 5
   _branchesMaxTileCount: 10

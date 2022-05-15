@@ -49,7 +49,7 @@ namespace Level_Generation
         {
             if (_allTileData == null || _allTileData.Length == 0)
             {
-                //Debug.logError("All tile data is empty");
+                Debug.LogError("All tile data is empty");
             }
             _Branches = new List<TileBranch>();
 
@@ -207,7 +207,6 @@ namespace Level_Generation
 
                     if (rootTile == null)
                     {
-                        //Debug.logError("EVERYTHING IS TERRIBLE");
                         return;
                     }
 
@@ -362,11 +361,10 @@ namespace Level_Generation
         {
             if (_connectorBlockers == null || _connectorBlockers.Length == 0)
             {
-                //Debug.logWarning("No blocker prefabs are designated", this);
+                Debug.LogWarning("No blocker prefabs are designated", this);
                 return;
             }
 
-            int count = 0;
             foreach (var branch in _Branches)
             {
                 foreach (var tile in branch.BranchTiles)
@@ -377,7 +375,6 @@ namespace Level_Generation
                         //Has no connection, spawn a blocker
                         if (!connector.isConnected)
                         {
-                            count++;
                             //Debug.log($"Non-connected Connector @{branch} -> @{tile} -> @{connector}", connector.gameObject);
 
                             SpawnBlockerForConnector(connector);
@@ -434,8 +431,7 @@ namespace Level_Generation
                     : GetTilesOfTypes(types, _allTileData);
                 
                 var randomTile = _useWeightedSelection
-                    ? RandomSelectTileData(
-                        randomPickTileSet)
+                    ? RandomSelectTileData(randomPickTileSet)
                     : PickRandomItemWeighted(randomPickTileSet);
 
 
@@ -489,7 +485,7 @@ namespace Level_Generation
         }
         
         //Modified version of this: https://stackoverflow.com/a/60995361
-        public static TileData PickRandomItemWeighted (TileData[] selectionSet)
+        public static TileData PickRandomItemWeighted(TileData[] selectionSet)
         {
             int offset = 0;
             (TileData Item, int RangeTo)[] rangedItems = selectionSet.ToList()
@@ -497,13 +493,13 @@ namespace Level_Generation
                 .Select(entry => (entry, RangeTo: offset += Mathf.FloorToInt(entry.selectionWeight * 100)))
                 .ToArray();
 
-            int randomNumber = (int)Random.Range(0, selectionSet.Sum(item => item.selectionWeight)) + 1;
+            int randomNumber = (int)Random.Range(0, selectionSet.Sum(item => item.selectionWeight));
             return rangedItems.First(item => randomNumber <= item.RangeTo).Item;
         }
         
         private TileData RandomSelectTileData(TileData[] selectionSet)
         {
-            return selectionSet[Random.Range(0, selectionSet.Length - 1)];
+            return selectionSet[Random.Range(0, selectionSet.Length)];
         }
 
         private TileData[] GetTilesOfType(TileType type, TileData[] selectionSet)
