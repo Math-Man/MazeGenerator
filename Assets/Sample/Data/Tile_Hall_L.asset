@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dfc0daf1cfa4628ab7d4d02f7d4b01d, type: 3}
+  m_Name: 'Tile: Tile Hall L'
+  m_EditorClassIdentifier: 
+  referenceName: Tile Hall L
+  selectionWeight: 1
+  tileType: 2
+  validConnectionTypes: 00000000010000000200000003000000
+  tilePrefab: {fileID: -109823762781374982, guid: 8960ce8f153b5f440a1ee89c86a3626f, type: 3}
+  autoFindMesh: 1
+  mesh: {fileID: 2530013226225921615, guid: e0e7659df4170f7428b8faa6f02c981a, type: 3}
