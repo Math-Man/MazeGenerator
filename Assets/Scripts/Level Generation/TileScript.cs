@@ -96,7 +96,6 @@ namespace Level_Generation
             var boxCollider = gameObject.AddComponent<BoxCollider>();
             boxCollider.isTrigger = true;
             m_BoxCollider = boxCollider;
-            Debug.Log(boxCollider);
         }
 
         public void SetBoxColliderActive(bool state)

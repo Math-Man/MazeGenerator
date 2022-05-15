@@ -20,6 +20,7 @@ namespace Level_Generation
         [SerializeField] [Range(0f, 1f)] private float _doorwayHavingDoorChance = 0.5f;
         [SerializeField] private string _tileLayerName = "Tile";
         [SerializeField] private string _doorLayerName = "Door";
+        [SerializeField] private bool _useWeightedSelection = false;
         
         [Header("Pathing restrictions")] 
         [SerializeField] private int _mainPathTileCount = 10;
@@ -36,15 +37,19 @@ namespace Level_Generation
         [Header("Optimization")] 
         [SerializeField] private bool _cacheMeshComponents = true;
 
+        [Header("General")] 
+        [SerializeField] private bool _generateLevelOnStart = true;
+        
         private List<TileBranch> _Branches;
         private List<MeshFilter> _tileMeshFilters;
         private List<MeshRenderer> _tileMeshRenderers;
+
         
         private void Awake()
         {
             if (_allTileData == null || _allTileData.Length == 0)
             {
-                Debug.LogError("All tile data is empty");
+                //Debug.logError("All tile data is empty");
             }
             _Branches = new List<TileBranch>();
 
@@ -55,14 +60,27 @@ namespace Level_Generation
 
         private void Start()
         {
-            BuildLevel();
+            if(_generateLevelOnStart)
+                BuildLevel();
         }
 
 
-        private void BuildLevel()
+        public void ClearLevel()
+        {
+            for (int childIndex = transform.childCount - 1; childIndex >= 0; childIndex--)
+            {
+                GameObject.DestroyImmediate(transform.GetChild(childIndex).gameObject);
+            }
+
+            _Branches = new List<TileBranch>();
+            _tileMeshFilters = new List<MeshFilter>();
+            _tileMeshRenderers = new List<MeshRenderer>();
+        }
+
+        public void BuildLevel()
         {
             //Create the initial tile
-            TileScript rootTile = SpawnRandomTileAndConnect(default(TileBranch), null, TileType.Cap, transform, null, true);
+            TileScript rootTile = SpawnRandomTileAndConnect(default(TileBranch), null, _startTileType, transform, null, true);
             TileScript tileTo = rootTile;
 
             if (_cacheMeshComponents)
@@ -117,21 +135,21 @@ namespace Level_Generation
                 }
 
 
-                Debug.Log("Placement "+ i);
+                //Debug.log("Placement "+ i);
                 
                 if (tileTo == null)
                 {
                     if (originalRoot == tileTo || originalRoot == tileFrom)
                     {
-                        Debug.Log("Trying to delete the original parent!", this);
+                        //Debug.log("Trying to delete the original parent!", this);
                         if (!canDeleteRoot)
                         {
-                            Debug.Log("Can't delete the original parent! Stopping.", tileTo);
+                            //Debug.log("Can't delete the original parent! Stopping.", tileTo);
                             break;
                         }
                     }
 
-                    Debug.Log("Total failure: " + (failureCount + 1) + " " + i);
+                    //Debug.log("Total failure: " + (failureCount + 1) + " " + i);
                     
                     if (_maxFailureCount < failureCount)
                         break;
@@ -141,7 +159,7 @@ namespace Level_Generation
                     tileTo = tileFrom;
                     tileFrom = tileFrom?.parentTile;
 
-                    Debug.Log("Deleting last tile " + i);
+                    //Debug.log("Deleting last tile " + i);
                     branch.BranchTiles.Remove(tileTo);
                     DisconnectAndDeleteConnectedTile(tileTo, tileTo.parentedConnector);
                 }
@@ -189,7 +207,7 @@ namespace Level_Generation
 
                     if (rootTile == null)
                     {
-                        Debug.LogError("EVERYTHING IS TERRIBLE");
+                        //Debug.logError("EVERYTHING IS TERRIBLE");
                         return;
                     }
 
@@ -344,7 +362,7 @@ namespace Level_Generation
         {
             if (_connectorBlockers == null || _connectorBlockers.Length == 0)
             {
-                Debug.LogWarning("No blocker prefabs are designated", this);
+                //Debug.logWarning("No blocker prefabs are designated", this);
                 return;
             }
 
@@ -360,8 +378,7 @@ namespace Level_Generation
                         if (!connector.isConnected)
                         {
                             count++;
-                            Debug.Log($"Non-connected Connector @{branch} -> @{tile} -> @{connector}",
-                                connector.gameObject);
+                            //Debug.log($"Non-connected Connector @{branch} -> @{tile} -> @{connector}", connector.gameObject);
 
                             SpawnBlockerForConnector(connector);
                         }
@@ -375,7 +392,7 @@ namespace Level_Generation
                 }
             }
 
-            Debug.Log($"Non-connected count {count}");
+            //Debug.log($"Non-connected count {count}");
         }
 
         private void ParentedTilePlacement(TileScript tileTo, Transform currentContainer, ConnectorScript pickedConnectorTo,
@@ -412,8 +429,14 @@ namespace Level_Generation
         {
             for (int attempt = 0; attempt < _maxNumberOfAttemptsPerTile; attempt++)
             {
-                var randomTile = RandomSelectTileData(
-                    initialTile ? GetTilesOfType(TileType.Cap, _allTileData) : GetTilesOfTypes(types, _allTileData));
+                var randomPickTileSet = initialTile
+                    ? GetTilesOfType(_startTileType, _allTileData)
+                    : GetTilesOfTypes(types, _allTileData);
+                
+                var randomTile = _useWeightedSelection
+                    ? RandomSelectTileData(
+                        randomPickTileSet)
+                    : PickRandomItemWeighted(randomPickTileSet);
 
 
                 randomTile.name = initialTile ?  $"Starting Tile: {randomTile.referenceName}" : $"Tile: {randomTile.referenceName}";
@@ -440,7 +463,7 @@ namespace Level_Generation
                     //Failed to place
                     branch.BranchTiles.Remove(instantiatedTile);
                     DisconnectAndDeleteConnectedTile(instantiatedTile, pickedConnectorFrom);
-                    Debug.Log("failed to place");
+                    //Debug.log("failed to place");
                 }
                 else
                     return instantiatedTile;
@@ -463,6 +486,19 @@ namespace Level_Generation
                 }
             }
             return selected;
+        }
+        
+        //Modified version of this: https://stackoverflow.com/a/60995361
+        public static TileData PickRandomItemWeighted (TileData[] selectionSet)
+        {
+            int offset = 0;
+            (TileData Item, int RangeTo)[] rangedItems = selectionSet.ToList()
+                .OrderBy(item => item.selectionWeight)
+                .Select(entry => (entry, RangeTo: offset += Mathf.FloorToInt(entry.selectionWeight * 100)))
+                .ToArray();
+
+            int randomNumber = (int)Random.Range(0, selectionSet.Sum(item => item.selectionWeight)) + 1;
+            return rangedItems.First(item => randomNumber <= item.RangeTo).Item;
         }
         
         private TileData RandomSelectTileData(TileData[] selectionSet)

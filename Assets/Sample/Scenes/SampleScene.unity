@@ -435,6 +435,7 @@ MonoBehaviour:
   _doorwayHavingDoorChance: 0.5
   _tileLayerName: Tile
   _doorLayerName: Door
+  _useWeightedSelection: 0
   _mainPathTileCount: 20
   _maxNumberOfAttemptsPerTile: 100
   _maxFailureCount: 100
@@ -444,6 +445,7 @@ MonoBehaviour:
   _branchesMinTileCount: 5
   _branchesMaxTileCount: 10
   _cacheMeshComponents: 1
+  _generateLevelOnStart: 1
 --- !u!4 &1970497695
 Transform:
   m_ObjectHideFlags: 0
